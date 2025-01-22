@@ -4,7 +4,7 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
+	stresstest "stress-test/internal/stress-test"
 
 	"github.com/spf13/cobra"
 )
@@ -12,38 +12,31 @@ import (
 // loadtestCmd represents the loadtest command
 var loadtestCmd = &cobra.Command{
 	Use:   "loadtest",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Realiza um teste de carga em um serviço web",
+	Long:  `Realiza um teste de carga em um serviço web, enviando um número específico de requisições com um nível de concorrência definido.`,
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		url := cmd.Flag("url").Value.String()
-		concurrency := cmd.Flag("concurrency").Value
-		requests := cmd.Flag("requests").Value.String()
-		fmt.Println("loadtest called")
-		fmt.Println("URL:", url)
-		fmt.Println("Concurrency:", concurrency)
-		fmt.Println("Requests:", requests)
+
+		// usando o Flags().GetInt()
+		totalRequests, _ := cmd.Flags().GetInt("requests")
+
+		// o valor da flag concurrency é um ponteiro para um inteiro, passado por referência
+		//concurrency := cmd.Flag("concurrency").Value
+
+		stresstest.Exec(url, totalRequests, concurrency)
+
 	},
 }
 
+var concurrency int
+
 func init() {
 	rootCmd.AddCommand(loadtestCmd)
+
 	loadtestCmd.Flags().StringP("url", "u", "", "URL para testar")
 	loadtestCmd.MarkFlagRequired("url")
-	loadtestCmd.Flags().IntP("concurrency", "c", 1, "Quantidade de chamadas simultâneas")
+
 	loadtestCmd.Flags().IntP("requests", "r", 1, "Número total de requests")
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// loadtestCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// loadtestCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	loadtestCmd.Flags().IntVarP(&concurrency, "concurrency", "c", 1, "Número de requests concorrentes")
 }
